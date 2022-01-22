@@ -1,0 +1,25 @@
+nelmio_api_doc:
+    routes:
+        path_patterns: # an array of regexps
+            - /articles
+        #path_patterns:
+        #    - ^/api(?!/doc$) # Accepts routes under /api except /api/doc
+    models:
+      use_jms: true
+      #names:
+      #    - { alias: ClientRequest, type: AppBundle\Entity\Client, groups: [request] }
+      #    - { alias: ClientResponse, type: AppBundle\Entity\Client, groups: [response]}
+    documentation:
+        host: api.pagospyme.com
+        schemes: [https]
+        info:
+            title: Online store Wr API
+            version: 1.0.0
+        securityDefinitions:
+            X-Api-Key:
+                type: apiKey
+                description: Access token
+                name: X-Api-Key
+                in: header
+        security:
+            - X-Api-Key: [coffee]

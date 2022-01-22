@@ -1,15 +1,44 @@
 framework:
     secret: '%env(APP_SECRET)%'
+    serializer: { enable_annotations: true }
     #csrf_protection: true
     #http_method_override: true
 
     # Enables session support. Note that the session will ONLY be started if you read or write from it.
     # Remove or comment this section to explicitly disable session support.
-    session:
-        handler_id: null
-        cookie_samesite: lax
+    #session:
+    #    handler_id: null
+    #    cookie_samesite: lax
 
     #esi: true
     #fragments: true
     php_errors:
         log: true
+# KnpPaginator Configuration
+knp_paginator:
+    page_range: 5                      # default page range used in pagination control
+    default_options:
+        page_name: page                # page query parameter name
+        sort_field_name: ~             # sort field query parameter name
+        sort_direction_name: direction # sort direction query parameter name
+        distinct: true                 # ensure distinct results, useful when ORM queries are using GROUP BY statements
+    template:
+        pagination: KnpPaginatorBundle:Pagination:sliding.html.twig     # sliding pagination controls template
+        sortable: KnpPaginatorBundle:Pagination:sortable_link.html.twig # sort link template
+
+
+# FOSRest Configuration
+fos_rest:
+    body_listener:
+        array_normalizer: fos_rest.normalizer.camel_keys
+    format_listener:
+        rules:
+            - { path: '^/', priorities: ['json'], fallback_format: json, prefer_extension: false }
+    param_fetcher_listener: true
+    view:
+        view_response_listener: 'force'
+        formats:
+            json: true
+    serializer:
+        serialize_null: true
+ 

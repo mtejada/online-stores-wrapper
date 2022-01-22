@@ -1,0 +1,27 @@
+App\Pagination\CustomPagination:
+    exclusion_policy: ALL
+    accessor_order: custom
+    custom_accessor_order: [links, totalItems, itemsPerPage, page, pageCount, items]
+    properties:
+        links:
+            expose: true
+            access_type: public_method
+            accessor:
+                getter: getLinks
+            type: array
+            serialized_name: _links
+        items:
+            type: array
+            serialized_name: data
+        page:
+            expose: true
+            serialized_name: current_page
+        pageCount:
+            expose: true
+            serialized_name: page_count
+        totalItems:
+            expose: true
+            serialized_name: total_items
+        itemsPerPage:
+            expose: true
+            serialized_name: items_per_page
