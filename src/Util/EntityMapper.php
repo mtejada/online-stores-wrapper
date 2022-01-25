@@ -13,7 +13,7 @@ class EntityMapper {
 
         $product->setItemId( ($item['itemId'][0]));
         $product->setClickOutLink($item['viewItemURL'][0]);
-        $product->setMainPhotoUrl(isset($item['pictureURLSuperSize']) ? $item['pictureURLSuperSize'][0] : 'No photo, replace with placeholder' ); //placeholder if does not exist?
+        $product->setMainPhotoUrl(isset($item['pictureURLSuperSize']) ? $item['pictureURLSuperSize'][0] : 'NO_PHOTO' ); //placeholder if does not exist?
         $product->setPriceCurrency($item['sellingStatus'][0]['currentPrice'][0]['@currencyId']);
         $product->setPrice($item['sellingStatus'][0]['currentPrice'][0]['__value__']);
         $product->setShippingPrice($item['shippingInfo'][0]['shippingServiceCost'][0]['__value__']);
