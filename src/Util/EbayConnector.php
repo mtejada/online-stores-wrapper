@@ -30,11 +30,11 @@ class EbayConnector  {
             'keywords'=>array(
                 'type'=>'keywords',
             ),
-            'max_price'=>array(
+            'price_max'=>array(
                 'type'=>'itemFilter',
                 'name'=>'MaxPrice'
             ),
-            'min_price'=>array(
+            'price_min'=>array(
                 'type'=>'itemFilter',
                 'name'=>'MinPrice'
             ),

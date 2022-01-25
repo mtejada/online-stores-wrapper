@@ -19,11 +19,11 @@ class ProductFilterType extends AbstractType {
     public function buildForm(FormBuilderInterface $builder, array $options) {
         $builder
                 ->add('keywords', TextType::class, array( 'required' => false))
-                ->add('min_price', NumberType::class, array(
+                ->add('price_min', NumberType::class, array(
                     'property_path' => 'minPrice',
                     'required' => false
                 ))
-                ->add('max_price', NumberType::class, array(
+                ->add('price_max', NumberType::class, array(
                     'property_path' => 'maxPrice',
                     'required' => false
                 ));

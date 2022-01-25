@@ -81,7 +81,7 @@ class ProductCest {
         $minAmount=250;
         $maxAmount=1500;
 
-        $I->sendGET("/products?limit=10&order=by_price_asc&min_price=".$minAmount."&max_price=".$maxAmount."&keywords=" . $keyword);
+        $I->sendGET("/products?limit=10&order=by_price_asc&price_min=".$minAmount."&price_max=".$maxAmount."&keywords=" . $keyword);
         
         $response = $I->grabResponse();
         $parsed = json_decode($response, true);
