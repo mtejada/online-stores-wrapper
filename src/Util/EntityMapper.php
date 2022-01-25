@@ -4,47 +4,25 @@ namespace App\Util;
 
 use Doctrine\Common\Collections\ArrayCollection;
 
-
 class EntityMapper {
 
-    private $connector;
-    private $paymentMenuBaseUrl;
+    public function ebayToProduct($item) {
 
-    public function __construct(\ApiBundle\Utils\ApiConnector $connector, string $paymentMenuBaseUrl) {
-        $this->connector = $connector;
-        $this->paymentMenuBaseUrl = $paymentMenuBaseUrl;
+        /** @var \App\Classes\Product $product */
+        $product = new \App\Classes\Product();
+
+        $product->setItemId( ($item['itemId'][0]));
+        $product->setClickOutLink($item['viewItemURL'][0]);
+        $product->setMainPhotoUrl(isset($item['pictureURLSuperSize']) ? $item['pictureURLSuperSize'][0] : 'No photo, replace with placeholder' ); //placeholder if does not exist?
+        $product->setPriceCurrency($item['sellingStatus'][0]['currentPrice'][0]['@currencyId']);
+        $product->setPrice($item['sellingStatus'][0]['currentPrice'][0]['__value__']);
+        $product->setShippingPrice($item['shippingInfo'][0]['shippingServiceCost'][0]['__value__']);
+        $product->setTitle($item['title'][0]);
+        $product->setValidUntil(\DateTime::createFromFormat(\DateTime::RFC3339_EXTENDED, $item['listingInfo'][0]['endTime'][0]));
+        $product->setBrand(''); 
+        $product->setDescription('');
+   
+        return $product;
     }
 
-    //transform this to the array convert based on store
-    public function corePaymentMethodToPublic($corePaymentMethod){
-
-        /** @var \AppBundle\Entity\PaymentMethod $paymentMethod */
-        $paymentMethod = null;
-
-        /** @var PaymentMethod $corePaymentMethod */
-        if (!is_null($corePaymentMethod)){
-            $paymentMethod = new \AppBundle\Entity\PaymentMethod();
-
-            $paymentMethod->setName($corePaymentMethod->getName());
-            $paymentMethod->setDisplayName($corePaymentMethod->getDisplayName());
-        }
-
-        return $paymentMethod;
-    }
-
-    public function corePaymentMethodGroupToPublic($corePaymentMethod){
-
-        /** @var \AppBundle\Entity\PaymentMethodGroup $paymentMethod */
-        $paymentMethod = null;
-
-        /** @var PaymentMethod PaymentMethodGroup */
-        if (!is_null($corePaymentMethod)){
-            $paymentMethod = new \AppBundle\Entity\PaymentMethodGroup();
-
-            $paymentMethod->setName($corePaymentMethod->getPublicName());
-            $paymentMethod->setDisplayName($corePaymentMethod->getDisplayName());
-        }
-
-        return $paymentMethod;
-    }
 }

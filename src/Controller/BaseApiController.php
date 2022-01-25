@@ -7,55 +7,27 @@ use App\Handler\HandlerResult;
 use App\Util\ApiProblem;
 use App\Util\ApiProblemException;
 use FOS\RestBundle\Controller\FOSRestController;
-use Symfony\Component\Form\Form;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Form\FormInterface;
 use FOS\RestBundle\View\View;
 use FOS\RestBundle\Context\Context;
 
 class BaseApiController extends FOSRestController {
 
-    protected $formType;
     protected $entityRepository;
     protected $queryBuilderAlias = "t";
+    protected $class;
+    protected $filter;
 
     /** @var \AppBundle\Handler\CommonHandler $entityHandler */
     protected $entityHandler;
     //Subclasses must edit this to customize the return data
     protected $serializerGroups = array("Default");
 
-    protected function __construct($formType, $entityRepository) {
-        $this->formType = $formType;
+    protected function __construct($entityRepository, $class, $filter) {
         $this->entityRepository = $entityRepository;
-    }
-
-    /**
-     * @return mixed
-     */
-    protected function getFormType() {
-        return $this->formType;
-    }
-
-    /**
-     * @param mixed $formType
-     */
-    protected function setFormType($formType) {
-        $this->formType = $formType;
-    }
-
-    /**
-     * @return mixed
-     */
-    protected function getEntityClass() {
-        return $this->entityRepository;
-    }
-
-    /**
-     * @param mixed $entityRepository
-     */
-    protected function setEntityClass($entityRepository) {
-        $this->entityRepository = $entityRepository;
+        $this->class = $class;
+        $this->filter = $filter;
     }
 
     /**
@@ -92,15 +64,8 @@ class BaseApiController extends FOSRestController {
     public function getEntityHandler() {
         if (!$this->entityHandler) {
 
-            //initialize it. We cannot do this in the constructor because we need to access the container, which
-            //is not available yet.
-            //And we can't pass it as an arg because we need to set the entity class and form type to be able to use it,
-            //but those parameters are set in the classes that extends this base class.
-
-            /** @var \AppBundle\Handler\CommonHandler $entityHandler */
             $entityHandler = $this->get('App\\Handler\\CommonHandler');
             $entityHandler->setEntityRepository($this->entityRepository);
-            $entityHandler->setFormType($this->formType);
 
             $this->entityHandler = $entityHandler;
         }
@@ -116,12 +81,11 @@ class BaseApiController extends FOSRestController {
     }
 
     protected function buildNotAuthorizedException() {
-                $this->throwApiProblemException(
+        $this->throwApiProblemException(
                 Response::HTTP_UNAUTHORIZED,
                 ApiProblem::NOT_AUTHORIZED,
-                        array('description'=>'the api-key is invalid')
+                array('description' => 'the api-key is invalid')
         );
-        
     }
 
     protected function throwApiObjectNotFoundException($description = null) {
@@ -156,8 +120,7 @@ class BaseApiController extends FOSRestController {
         }
         $apiProblem->set('errors', $errors);
 
-        //This annotation is a workaround for a intellij bug!
-        //"The thrown object must be an instance of the Exception or Throwable"
+
         /** @var \Exception $apiProblemEx */
         $apiProblemEx = new ApiProblemException(
                 $apiProblem,
@@ -165,13 +128,13 @@ class BaseApiController extends FOSRestController {
                 array('Content-Type' => 'application/problem+json'),
                 $apiProblem->getStatusCode()
         );
-        
+
 
         throw $apiProblemEx;
     }
 
     protected function baseIndexAction(Request $request, $options = array()) {
-        $arrComp = $this->extractCompany($request);
+        $arrComp = true;
         if (!$arrComp) {
 
             $response = $this->buildNotAuthorizedException();
@@ -181,12 +144,12 @@ class BaseApiController extends FOSRestController {
             $params['payload'] = $request->query->all();
             $params['paginate'] = $paginateResults;
 
-            $params['payload'] = array_merge($params['payload'], $arrComp);
-            //If the filters options is set, then merge those too
-            if (isset($options['filters'])) {
-                $params['payload'] = array_merge($params['payload'], $options['filters']);
+            $filterObj=new $this->class();
+            $form = $this->createForm($this->filter, $filterObj);
+            $form->submit($params['payload']);
+            if(!$form->isValid()){
+                return $form->getErrors();
             }
-
             /** @var \AppBundle\Handler\HandlerResult $handlerResult */
             $handlerResult = $this->getEntityHandler()->retrieve($params);
 
@@ -279,8 +242,8 @@ class BaseApiController extends FOSRestController {
         if ($paginated) {
             $context->setGroups(
                     array(
-                        'public-api',
-                        'data' => $this->serializerGroups
+                        'Default',
+                        'data' => 'response'
                     )
             );
         } else {
@@ -288,20 +251,6 @@ class BaseApiController extends FOSRestController {
         }
 
         return $context;
-    }
-
-    public function extractCompany($request) {
-        $res = false;
-        if (is_numeric($request->headers->get('x-consumer-custom-id'))) {
-
-            $res['company'] = $request->headers->get('x-consumer-custom-id');
-            $res['username'] = $request->headers->get('x-consumer-username');
-            $res['groups'] = $request->headers->get('x-consumer-groups');
-            $res['key'] = $request->headers->get('x-api-key');
-        } else {
-            //$this->throwApiNotAuthorizedException($request->headers->get('x-api-key'));
-        }
-        return $res;
     }
 
 }
